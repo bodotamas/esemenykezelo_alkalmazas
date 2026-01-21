@@ -57,7 +57,7 @@ public class AdminUsersController {
         // role-ok frissítése (ha semmit nem jelöl: üres lenne -> ezt nem engedjük)
         if (roles == null || roles.isEmpty()) {
             // ha nincs kiválasztva semmi, hagyjuk meg a korábbit
-            // (így nem tudod véletlenül “role nélkül” menteni)
+            // így nem tudom role nélkül menteni.
         } else {
             user.setRoles(new HashSet<>(roles));
         }
@@ -70,7 +70,7 @@ public class AdminUsersController {
     public String deleteUser(@PathVariable Long id, Principal principal) {
         User target = userRepository.findById(id).orElseThrow();
 
-        // ne tudd saját magad törölni (erősen ajánlott)
+        // ne tudjam magam törölni
         if (principal != null && principal.getName().equals(target.getUsername())) {
             return "redirect:/admin/users?selfDeleteError";
         }
