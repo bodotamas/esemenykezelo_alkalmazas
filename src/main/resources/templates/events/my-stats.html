@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="hu"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Saját eseményeim – Statisztika</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="page-wrap">
+    <div class="container">
+
+        <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+            <div>
+                <h1 class="h3 mb-1">Eseményeim – Statisztika</h1>
+                <div class="text-muted">Itt eléred a saját (vagy admin esetén az összes) esemény statisztikáját.</div>
+            </div>
+            <a class="btn btn-outline-light" th:href="@{/events}">Események</a>
+        </div>
+
+        <div class="alert alert-info" th:if="${isAdmin}">
+            Adminisztrátorként az összes esemény látható.
+        </div>
+
+        <div class="app-card p-3 p-lg-4" th:if="${events != null and !#lists.isEmpty(events)}">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <div class="h5 mb-0">Lista</div>
+                <div class="text-muted small">
+                    Összesen: <span class="fw-semibold" th:text="${#lists.size(events)}">0</span> db
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>Cím</th>
+                        <th>Dátum</th>
+                        <th>Kategória</th>
+                        <th>Létrehozó</th>
+                        <th class="text-end">Művelet</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="e : ${events}">
+                        <td class="fw-semibold" th:text="${e.title}">Cím</td>
+                        <td th:text="${e.date}">2026-01-01</td>
+                        <td>
+                            <span class="badge-soft" th:text="${e.category}">EGYEB</span>
+                        </td>
+                        <td th:text="${e.createdBy != null ? e.createdBy.username : ''}"></td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-light"
+                               th:href="@{/events/{id}/stats(id=${e.id})}">
+                                Statisztika
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-3" th:if="${events == null or #lists.isEmpty(events)}">
+            Nincs megjeleníthető esemény.
+        </div>
+
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

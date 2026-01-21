@@ -1,0 +1,60 @@
+################################
+# Spring Boot / Gradle
+################################
+HELP.md
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+################################
+# IDE-k
+################################
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+################################
+# Projekt-specifikus (FONTOS!)
+################################
+
+# H2 file database
+/data/
+*.mv.db
+*.trace.db
+
+# Feltöltött képek / fájlok
+/uploads/
+
+# OS
+.DS_Store
+Thumbs.db

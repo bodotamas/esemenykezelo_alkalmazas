@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="hu" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Profil szerkesztése</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="page-wrap">
+    <div class="container" style="max-width: 920px;">
+
+        <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+            <div>
+                <h1 class="h3 mb-1">Profil szerkesztése</h1>
+                <div class="text-muted">Frissítsd az adataidat és tölts fel új profilképet.</div>
+            </div>
+            <a class="btn btn-outline-light" th:href="@{/profile}">Vissza</a>
+        </div>
+
+        <div class="app-card p-3 p-lg-4">
+            <form th:action="@{/profile/edit}" method="post" th:object="${user}" enctype="multipart/form-data">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                <div class="row g-3">
+
+                    <!-- Profilkép blokk -->
+                    <div class="col-12">
+                        <div class="app-panel p-3">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img th:src="${user.profileImagePath != null ? user.profileImagePath : '/images/default-avatar.png'}"
+                                         alt="Profilkép"
+                                         class="rounded-circle"
+                                         style="width: 92px; height: 92px; object-fit: cover; border: 1px solid rgba(255,255,255,.18);">
+
+                                    <div>
+                                        <div class="fw-semibold mb-1">Jelenlegi profilkép</div>
+                                        <div class="text-muted small">Ha újat töltesz fel, a régi lecserélődik.</div>
+                                    </div>
+                                </div>
+
+                                <div style="min-width: 280px;">
+                                    <label class="form-label">Új profilkép feltöltése</label>
+                                    <input class="form-control" type="file" name="profileImage" accept="image/*">
+                                    <div class="form-text">JPG/PNG ajánlott.</div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-danger mt-3 mb-0" th:if="${param.imgError}">
+                                Csak képfájl tölthető fel (pl. JPG/PNG).
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input class="form-control" type="email" th:field="*{email}">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Születési dátum</label>
+                        <input class="form-control" type="date" th:field="*{birthDate}">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Vezetéknév</label>
+                        <input class="form-control" type="text" th:field="*{lastName}">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Keresztnév</label>
+                        <input class="form-control" type="text" th:field="*{firstName}">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Hobbi</label>
+                        <input class="form-control" type="text" th:field="*{hobby}">
+                    </div>
+
+                </div>
+
+                <div class="mt-4 d-flex flex-wrap gap-2">
+                    <button class="btn btn-primary" type="submit">Mentés</button>
+                    <a class="btn btn-outline-light" th:href="@{/profile}">Mégse</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

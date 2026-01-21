@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="hu" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bejelentkezés</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="auth-wrap">
+    <div class="auth-card">
+        <div class="row g-3">
+            <div class="col-lg-5">
+                <div class="auth-side p-4 p-lg-5 h-100">
+                    <span class="badge-soft">Bejelentkezés</span>
+                    <h2 class="mt-3 mb-2">Üdv újra!</h2>
+                    <p class="text-muted mb-0">
+                        Lépj be, hogy elérd a profilodat, kedvenceidet és az események funkcióit.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="app-card p-4 p-lg-5">
+                    <h1 class="h3 fw-bold mb-1">Belépés</h1>
+                    <p class="text-muted mb-4">Add meg a felhasználóneved és jelszavad.</p>
+
+                    <div th:if="${param.error}" class="alert alert-danger">
+                        Hibás felhasználónév vagy jelszó.
+                    </div>
+                    <div th:if="${param.logout}" class="alert alert-info">
+                        Sikeres kijelentkezés.
+                    </div>
+
+                    <form th:action="@{/login}" method="post" class="mt-3">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                        <div class="mb-3">
+                            <label class="form-label">Felhasználónév</label>
+                            <input class="form-control" type="text" name="username" required autocomplete="username">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Jelszó</label>
+                            <input class="form-control" type="password" name="password" required autocomplete="current-password">
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" type="submit">Belépés</button>
+                            <a class="btn btn-outline-light" th:href="@{/register}">Nincs fiókod? Regisztráció</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

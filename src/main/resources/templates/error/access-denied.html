@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Hozzáférés megtagadva</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5" style="max-width: 720px;">
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <h1 class="h4 mb-3">Nincs jogosultságod ehhez a művelethez</h1>
+            <p class="text-muted mb-4">
+                Ez az oldal csak Szervező vagy Admin felhasználóknak érhető el.
+            </p>
+
+            <div class="d-flex gap-2">
+                <a class="btn btn-primary" th:href="@{/events}">Vissza az eseményekhez</a>
+                <a class="btn btn-outline-secondary" th:href="@{/}">Főoldal</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
