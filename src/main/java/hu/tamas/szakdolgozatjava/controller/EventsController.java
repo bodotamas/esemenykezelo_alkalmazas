@@ -4,6 +4,7 @@ import hu.tamas.szakdolgozatjava.model.Category;
 import hu.tamas.szakdolgozatjava.model.Event;
 import hu.tamas.szakdolgozatjava.repository.EventRepository;
 import hu.tamas.szakdolgozatjava.repository.UserRepository;
+import hu.tamas.szakdolgozatjava.service.FavoriteService;
 import hu.tamas.szakdolgozatjava.service.RegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -14,13 +15,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-import hu.tamas.szakdolgozatjava.service.FavoriteService;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
-
 
 import java.io.File;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,7 +35,6 @@ public class EventsController {
     private final RegistrationService registrationService;
     private final FavoriteService favoriteService;
 
-
     public EventsController(EventRepository eventRepository,
                             UserRepository userRepository,
                             RegistrationService registrationService,
@@ -47,7 +44,6 @@ public class EventsController {
         this.registrationService = registrationService;
         this.favoriteService = favoriteService;
     }
-
 
     private static final String UPLOAD_DIR = System.getProperty("user.dir") + File.separator + "uploads";
 
@@ -294,12 +290,19 @@ public class EventsController {
                               @RequestParam(value = "image", required = false) MultipartFile image,
                               Model model) throws Exception {
 
+        // mindig kérjük le a meglévő eventet
+        var existing = eventRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Esemény nem található"));
+
+        // ⭐ KRITIKUS: validációs hiba esetén az 'event.id' null lehet -> rossz th:action -> 404 a következő submitnál.
+        // Beállítjuk az id-t, hogy az edit.html mindig helyes /events/{id} action-t generáljon.
+        event.setIdForRegistration(existing.getId());
+
         model.addAttribute("allCategories", Category.values());
         model.addAttribute("startTimeStr", startTimeStr);
         model.addAttribute("endTimeStr", endTimeStr);
 
-        var existing = eventRepository.findById(id).orElseThrow();
-
+        // dátum / mező validáció hibák
         if (bindingResult.hasErrors()) {
             return "events/edit";
         }
@@ -322,7 +325,6 @@ public class EventsController {
                 return "events/edit";
             }
 
-            // mezők másolása + idő beállítás
             existing.setStartTime(startDt);
             existing.setEndTime(endDt);
 
@@ -414,5 +416,4 @@ public class EventsController {
         if (params.isEmpty()) return "redirect:/events";
         return "redirect:/events?" + String.join("&", params);
     }
-
 }
