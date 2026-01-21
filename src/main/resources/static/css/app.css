@@ -190,3 +190,77 @@ body, .btn, .form-control, .form-select
 
 /* Utility */
 .text-muted { color: rgba(255,255,255,.62) !important; }
+
+
+/* ===== Admin / táblázat finomhangolás (illeszd az app.css VÉGÉRE) ===== */
+
+.app-card{
+  background: rgba(18, 22, 32, 0.55);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 22px;
+  box-shadow: 0 20px 70px rgba(0,0,0,.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+
+/* Panel (user-edit oldalon) */
+.app-panel{
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 18px;
+}
+
+/* A táblát ne "fekete kockának" érezd, legyen üvegesen illesztve */
+.admin-table{
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: rgba(255,255,255,.04);
+  --bs-table-hover-bg: rgba(255,255,255,.06);
+  --bs-table-border-color: rgba(255,255,255,.10);
+  color: rgba(255,255,255,.92);
+}
+
+.admin-table thead th{
+  color: rgba(255,255,255,.92);
+  font-weight: 700;
+  letter-spacing: .2px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.admin-table td, .admin-table th{
+  padding: 18px 20px;
+  border-color: rgba(255,255,255,.10);
+}
+
+/* Badge a role-okhoz */
+.badge-soft{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.92);
+  font-size: .80rem;
+}
+
+/* Gombok picit "premium" */
+.btn{
+  border-radius: 14px;
+}
+
+.btn-sm{
+  border-radius: 12px;
+}
+
+/* Form control sötét kártyán szépen nézzen ki */
+.app-card .form-control{
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.92);
+}
+
+.app-card .form-control:focus{
+  background: rgba(255,255,255,.08);
+  border-color: rgba(124,58,237,.6);
