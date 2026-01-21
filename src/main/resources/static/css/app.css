@@ -264,3 +264,63 @@ body, .btn, .form-control, .form-select
 .app-card .form-control:focus{
   background: rgba(255,255,255,.08);
   border-color: rgba(124,58,237,.6);
+
+/* ===== Auth modal (bejelentkezés/regisztráció) ===== */
+
+.auth-modal .modal-dialog{
+  max-width: 560px;
+}
+
+.auth-modal__content{
+  background: rgba(18, 22, 32, 0.62);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 22px;
+  box-shadow: 0 30px 90px rgba(0,0,0,.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  overflow: hidden;
+  color: rgba(255,255,255,.92);
+}
+
+.auth-modal__header{
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  padding: 18px 18px 14px;
+  background: linear-gradient(135deg, rgba(124,58,237,.22), rgba(34,197,94,.10));
+}
+
+.auth-modal__title{
+  font-weight: 800;
+  letter-spacing: .2px;
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.auth-modal__subtitle{
+  margin-top: 4px;
+  color: rgba(255,255,255,.70);
+  font-size: .92rem;
+}
+
+.auth-modal__body{
+  padding: 18px;
+}
+
+.auth-modal__hint{
+  font-size: .92rem;
+  color: rgba(255,255,255,.68);
+}
+
+/* Backdrop legyen elegánsabb */
+.modal-backdrop.show{
+  opacity: .62;
+}
+
+/* Modal gombok “premium” */
+.auth-modal .btn{
+  border-radius: 16px;
+  padding: 12px 14px;
+}
+
+.auth-modal .btn-lg{
+  padding: 12px 14px;
+}
