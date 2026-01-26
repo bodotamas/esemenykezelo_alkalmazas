@@ -3,6 +3,7 @@ package hu.tamas.szakdolgozatjava.controller;
 import hu.tamas.szakdolgozatjava.model.Role;
 import hu.tamas.szakdolgozatjava.model.User;
 import hu.tamas.szakdolgozatjava.repository.UserRepository;
+import hu.tamas.szakdolgozatjava.service.AdminUserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,9 +20,11 @@ import java.util.Set;
 public class AdminUsersController {
 
     private final UserRepository userRepository;
+    private final AdminUserService adminUserService;
 
-    public AdminUsersController(UserRepository userRepository) {
+    public AdminUsersController(UserRepository userRepository, AdminUserService adminUserService) {
         this.userRepository = userRepository;
+        this.adminUserService = adminUserService;
     }
 
     @GetMapping
@@ -35,7 +38,7 @@ public class AdminUsersController {
         User user = userRepository.findById(id).orElseThrow();
 
         model.addAttribute("user", user);
-        model.addAttribute("allRoles", EnumSet.allOf(Role.class)); // LAKOS, SZERVEZO, ADMIN
+        model.addAttribute("allRoles", EnumSet.allOf(Role.class));
         return "admin/user-edit";
     }
 
@@ -47,18 +50,13 @@ public class AdminUsersController {
     ) {
         User user = userRepository.findById(id).orElseThrow();
 
-        // alap profil mezők frissítése
         user.setEmail(formUser.getEmail());
         user.setFirstName(formUser.getFirstName());
         user.setLastName(formUser.getLastName());
         user.setBirthDate(formUser.getBirthDate());
         user.setHobby(formUser.getHobby());
 
-        // role-ok frissítése (ha semmit nem jelöl: üres lenne -> ezt nem engedjük)
-        if (roles == null || roles.isEmpty()) {
-            // ha nincs kiválasztva semmi, hagyjuk meg a korábbit
-            // így nem tudom role nélkül menteni.
-        } else {
+        if (roles != null && !roles.isEmpty()) {
             user.setRoles(new HashSet<>(roles));
         }
 
@@ -70,12 +68,12 @@ public class AdminUsersController {
     public String deleteUser(@PathVariable Long id, Principal principal) {
         User target = userRepository.findById(id).orElseThrow();
 
-        // ne tudjam magam törölni
+        // ne tudd magad törölni
         if (principal != null && principal.getName().equals(target.getUsername())) {
             return "redirect:/admin/users?selfDeleteError";
         }
 
-        userRepository.deleteById(id);
+        adminUserService.deleteUserHard(id);
         return "redirect:/admin/users?deleted";
     }
 }

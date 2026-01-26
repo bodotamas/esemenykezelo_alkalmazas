@@ -13,9 +13,14 @@ public interface EventFavoriteRepository extends JpaRepository<EventFavorite, Lo
 
     void deleteByUser_IdAndEvent_Id(Long userId, Long eventId);
 
+    // >>> EZ HIÁNYZOTT a user törléshez:
+    void deleteByUser_Id(Long userId);
+
+    // >>> EZ hasznos, ha userhez tartozó eventeket is törlünk:
+    void deleteByEvent_Id(Long eventId);
+
     @Query("select f.event.id from EventFavorite f where f.user.id = :userId")
     Set<Long> findFavoriteEventIdsByUserId(@Param("userId") Long userId);
 
     long countByEvent_Id(Long eventId);
-
 }

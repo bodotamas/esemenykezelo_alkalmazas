@@ -37,4 +37,5 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     List<Event> findByCreatedBy_UsernameOrderByStartTimeAsc(String username);
 
+    List<Event> findByCreatedBy_Id(Long userId);
 }

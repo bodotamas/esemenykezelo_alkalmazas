@@ -15,6 +15,12 @@ public interface EventRegistrationRepository extends JpaRepository<EventRegistra
 
     void deleteByEvent_IdAndUser_Id(Long eventId, Long userId);
 
+    // >>> EZ HIÁNYZOTT a user törléshez:
+    void deleteByUser_Id(Long userId);
+
+    // >>> EZ hasznos, ha userhez tartozó eventeket is törlünk:
+    void deleteByEvent_Id(Long eventId);
+
     @Query("select er.event.id from EventRegistration er where er.user.id = :userId")
     Set<Long> findRegisteredEventIdsByUserId(@Param("userId") Long userId);
 }
