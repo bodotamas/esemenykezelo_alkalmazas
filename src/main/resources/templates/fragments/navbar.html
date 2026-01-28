@@ -61,8 +61,7 @@
                         <img th:if="${currentUser != null}"
                              th:src="${currentUser.profileImagePath != null ? currentUser.profileImagePath : '/images/default-avatar.png'}"
                              alt="avatar"
-                             class="rounded-circle"
-                             style="width: 32px; height: 32px; object-fit: cover;">
+                             class="avatar avatar--sm rounded-circle">
                         <span>Profil</span>
                     </a>
                 </li>

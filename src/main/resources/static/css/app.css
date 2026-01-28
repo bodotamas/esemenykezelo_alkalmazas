@@ -264,7 +264,7 @@ body, .btn, .form-control, .form-select
 .app-card .form-control:focus{
   background: rgba(255,255,255,.08);
   border-color: rgba(124,58,237,.6);
-
+}
 /* ===== Auth modal (bejelentkezés/regisztráció) ===== */
 
 .auth-modal .modal-dialog{
@@ -324,3 +324,16 @@ body, .btn, .form-control, .form-select
 .auth-modal .btn-lg{
   padding: 12px 14px;
 }
+
+/* ===== Avatars (profilkép) ===== */
+.avatar{
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,.18);
+}
+
+/* Méretek */
+.avatar--sm{ width: 32px; height: 32px; }
+.avatar--md{ width: 92px; height: 92px; }
+.avatar--lg{ width: 104px; height: 104px; }
