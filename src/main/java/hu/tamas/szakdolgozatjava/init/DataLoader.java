@@ -21,7 +21,7 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (eventRepository.count() == 0) {
+        if (eventRepository.count() < 3)  {
 
             // 1) Lakógyűlés
             Event e1 = new Event(

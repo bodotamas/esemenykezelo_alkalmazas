@@ -13,15 +13,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // H2 console (dev)
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
-
-                // szép 403 oldal
                 .exceptionHandling(ex -> ex.accessDeniedPage("/access-denied"))
 
                 .authorizeHttpRequests(auth -> auth
-                        // publikus oldalak
                         .requestMatchers(
                                 "/",
                                 "/login",
@@ -38,22 +34,15 @@ public class SecurityConfig {
                         .requestMatchers("/events").permitAll()
 
                         // esemény létrehozás: csak SZERVEZO / ADMIN
-                        .requestMatchers("/events/new")
-                        .hasAnyRole("SZERVEZO", "ADMIN")
+                        .requestMatchers("/events/new").hasAnyRole("SZERVEZO", "ADMIN")
 
-                        /*
-                         * FONTOS:
-                         * edit / update / delete NEM role alapján dől el,
-                         * hanem @PreAuthorize + owner check alapján
-                         */
-                        .requestMatchers(
-                                "/events/*/edit",
-                                "/events/*/delete",
-                                "/events/*"
-                        ).authenticated()
+                        // join/leave: csak belépve
+                        .requestMatchers("/events/*/join", "/events/*/leave").authenticated()
+
+                        // edit/update/delete: belépve, de tényleges jogosultság @PreAuthorize (owner/admin)
+                        .requestMatchers("/events/*/edit", "/events/*/delete", "/events/*").authenticated()
 
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        // minden más csak belépve
                         .anyRequest().authenticated()
                 )
 

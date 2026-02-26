@@ -2,6 +2,8 @@ package hu.tamas.szakdolgozatjava.controller;
 
 import hu.tamas.szakdolgozatjava.model.Category;
 import hu.tamas.szakdolgozatjava.model.Event;
+import hu.tamas.szakdolgozatjava.model.EventVisibility;
+import hu.tamas.szakdolgozatjava.model.RegistrationStatus;
 import hu.tamas.szakdolgozatjava.repository.EventRepository;
 import hu.tamas.szakdolgozatjava.repository.UserRepository;
 import hu.tamas.szakdolgozatjava.service.FavoriteService;
@@ -9,6 +11,7 @@ import hu.tamas.szakdolgozatjava.service.RegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -58,19 +61,14 @@ public class EventsController {
             @RequestParam(required = false, defaultValue = "START_ASC") String sort,
             @RequestParam(required = false, defaultValue = "false") boolean onlyFavorites,
             Model model,
-            Principal principal
+            Principal principal,
+            Authentication authentication
     ) {
-        // category string -> enum (ha üres vagy hibás, akkor nincs szűrés)
         Category categoryEnum = null;
         if (category != null && !category.isBlank()) {
-            try {
-                categoryEnum = Category.valueOf(category);
-            } catch (IllegalArgumentException ignored) {
-                categoryEnum = null;
-            }
+            try { categoryEnum = Category.valueOf(category); } catch (IllegalArgumentException ignored) {}
         }
 
-        // date -> [startOfDay, endOfDay)
         LocalDateTime startOfDay = null;
         LocalDateTime endOfDay = null;
         if (date != null) {
@@ -78,33 +76,51 @@ public class EventsController {
             endOfDay = date.plusDays(1).atStartOfDay();
         }
 
-        // upcoming filterhez "now"
         LocalDateTime now = LocalDateTime.now();
 
-        // rendezés
         org.springframework.data.domain.Sort sortObj = switch (sort) {
             case "START_DESC" -> org.springframework.data.domain.Sort.by("startTime").descending();
             case "CREATED_ASC" -> org.springframework.data.domain.Sort.by("createdAt").ascending();
             case "CREATED_DESC" -> org.springframework.data.domain.Sort.by("createdAt").descending();
-            default -> org.springframework.data.domain.Sort.by("startTime").ascending(); // START_ASC
+            default -> org.springframework.data.domain.Sort.by("startTime").ascending();
         };
 
-        // alap lekérdezés (q/category/date/upcoming/sort)
         List<Event> events = eventRepository.search(q, categoryEnum, startOfDay, endOfDay, upcoming, now, sortObj);
 
-        // kedvencek id-k (csak ha belépve)
-        Set<Long> favoriteEventIds = Collections.emptySet();
+        // bejelentkezett user?
         Long userId = null;
+        boolean isAdmin = false;
+
+        Set<Long> favoriteEventIds = Collections.emptySet();
         if (principal != null) {
             var user = userRepository.findByUsername(principal.getName()).orElseThrow();
             userId = user.getId();
+
+            if (authentication != null) {
+                isAdmin = authentication.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            }
+
             favoriteEventIds = favoriteService.favoriteEventIdsForUser(userId);
         }
 
-        // csak kedvencek szűrés (MVP: Java oldalon)
+        // PRIVÁT szűrés:
+        // - PUBLIC: mindenki látja
+        // - PRIVATE: csak ADMIN vagy tulajdonos látja a listában
+        final Long userIdFinal = userId;
+        final boolean isAdminFinal = isAdmin;
+
+        events = events.stream().filter(e -> {
+            if (e.getVisibility() == null || e.getVisibility() == EventVisibility.PUBLIC) return true;
+            if (isAdminFinal) return true;
+            if (userIdFinal == null) return false;
+            return e.getCreatedBy() != null && Objects.equals(e.getCreatedBy().getId(), userIdFinal);
+        }).toList();
+
+        // csak kedvencek
         if (onlyFavorites) {
             if (userId == null) {
-                events = List.of(); // nincs belépve -> üres lista
+                events = List.of();
             } else {
                 Set<Long> favIdsFinal = favoriteEventIds;
                 events = events.stream()
@@ -116,14 +132,31 @@ public class EventsController {
         model.addAttribute("events", events);
         model.addAttribute("favoriteEventIds", favoriteEventIds);
 
-        // létszámok (eventId -> count)
+        // létszámok (confirmed + waitlist)
         Map<Long, Long> attendeeCounts = new HashMap<>();
-        for (Event e : events) {
-            attendeeCounts.put(e.getId(), registrationService.countByEventId(e.getId()));
-        }
-        model.addAttribute("attendeeCounts", attendeeCounts);
+        Map<Long, Long> waitlistCounts = new HashMap<>();
+        Map<Long, Long> freeSeats = new HashMap<>();
 
-        // bejelentkezett user regisztrált event id-k (a gombokhoz)
+        for (Event e : events) {
+            long confirmed = registrationService.countConfirmedByEventId(e.getId());
+            long waitlisted = registrationService.countWaitlistedByEventId(e.getId());
+
+            attendeeCounts.put(e.getId(), confirmed);
+            waitlistCounts.put(e.getId(), waitlisted);
+
+            if (e.getCapacity() == null) {
+                freeSeats.put(e.getId(), -1L); // -1 = korlátlan jelzés
+            } else {
+                long free = e.getCapacity() - confirmed;
+                freeSeats.put(e.getId(), Math.max(0, free));
+            }
+        }
+
+        model.addAttribute("attendeeCounts", attendeeCounts);
+        model.addAttribute("waitlistCounts", waitlistCounts);
+        model.addAttribute("freeSeats", freeSeats);
+
+        // user regisztrált event id-k (a gombokhoz)
         Set<Long> registeredEventIds = Collections.emptySet();
         if (principal != null) {
             var user = userRepository.findByUsername(principal.getName()).orElseThrow();
@@ -131,10 +164,7 @@ public class EventsController {
         }
         model.addAttribute("registeredEventIds", registeredEventIds);
 
-        // categories a selecthez
         model.addAttribute("allCategories", Category.values());
-
-        // filter mezők visszatöltése
         model.addAttribute("q", q != null ? q : "");
         model.addAttribute("category", categoryEnum != null ? categoryEnum.name() : "");
         model.addAttribute("date", date != null ? date.toString() : "");
@@ -150,13 +180,17 @@ public class EventsController {
         Event e = new Event();
         e.setDate(java.time.LocalDate.now());
         e.setCategory(Category.EGYEB);
+        e.setVisibility(EventVisibility.PUBLIC);
+        e.setCapacity(null); // korlátlan default
 
         model.addAttribute("event", e);
         model.addAttribute("allCategories", Category.values());
 
-        // idő előtöltés
         model.addAttribute("startTimeStr", "09:00");
         model.addAttribute("endTimeStr", "10:00");
+
+        // a template-hez kelleni fog majd:
+        model.addAttribute("allVisibilities", EventVisibility.values());
 
         return "events/new";
     }
@@ -171,15 +205,14 @@ public class EventsController {
                               Model model) throws Exception {
 
         model.addAttribute("allCategories", Category.values());
+        model.addAttribute("allVisibilities", EventVisibility.values());
         model.addAttribute("startTimeStr", startTimeStr);
         model.addAttribute("endTimeStr", endTimeStr);
 
-        // dátum validáció hibák
         if (bindingResult.hasErrors()) {
             return "events/new";
         }
 
-        // idő parse + logikai ellenőrzés
         try {
             if (startTimeStr == null || startTimeStr.isBlank() || endTimeStr == null || endTimeStr.isBlank()) {
                 model.addAttribute("timeError", "Kérlek add meg a kezdő és záró időpontot.");
@@ -208,9 +241,11 @@ public class EventsController {
         var user = userRepository.findByUsername(principal.getName()).orElseThrow();
         event.setCreatedBy(user);
 
+        // null safety
+        if (event.getVisibility() == null) event.setVisibility(EventVisibility.PUBLIC);
+
         eventRepository.save(event);
 
-        // kép mentése
         if (image != null && !image.isEmpty()) {
             Path uploadRoot = Paths.get(UPLOAD_DIR, "events");
             Files.createDirectories(uploadRoot);
@@ -237,14 +272,23 @@ public class EventsController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/events/{id}/join")
-    public String joinEvent(@PathVariable Long id, Principal principal) {
+    public String joinEvent(@PathVariable Long id, Principal principal, Authentication authentication) {
         var user = userRepository.findByUsername(principal.getName()).orElseThrow();
 
-        if (!eventRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Esemény nem található");
+        var event = eventRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Esemény nem található"));
+
+        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isOwner = event.getCreatedBy() != null && Objects.equals(event.getCreatedBy().getId(), user.getId());
+
+        if (event.getVisibility() == EventVisibility.PRIVATE && !(isAdmin || isOwner)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ehhez a privát eseményhez nincs hozzáférésed.");
         }
 
-        registrationService.register(id, user.getId());
+        RegistrationStatus status = registrationService.register(id, user.getId());
+        // Ha akarsz: később feliratozzuk a UI-n, hogy CONFIRMED vagy WAITLISTED lett.
         return "redirect:/events";
     }
 
@@ -271,6 +315,7 @@ public class EventsController {
 
         model.addAttribute("event", event);
         model.addAttribute("allCategories", Category.values());
+        model.addAttribute("allVisibilities", EventVisibility.values());
 
         model.addAttribute("startTimeStr",
                 event.getStartTime() != null ? event.getStartTime().toLocalTime().toString() : "09:00");
@@ -290,24 +335,20 @@ public class EventsController {
                               @RequestParam(value = "image", required = false) MultipartFile image,
                               Model model) throws Exception {
 
-        // mindig kérjük le a meglévő eventet
         var existing = eventRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Esemény nem található"));
 
-        // ⭐ KRITIKUS: validációs hiba esetén az 'event.id' null lehet -> rossz th:action -> 404 a következő submitnál.
-        // Beállítjuk az id-t, hogy az edit.html mindig helyes /events/{id} action-t generáljon.
         event.setIdForRegistration(existing.getId());
 
         model.addAttribute("allCategories", Category.values());
+        model.addAttribute("allVisibilities", EventVisibility.values());
         model.addAttribute("startTimeStr", startTimeStr);
         model.addAttribute("endTimeStr", endTimeStr);
 
-        // dátum / mező validáció hibák
         if (bindingResult.hasErrors()) {
             return "events/edit";
         }
 
-        // idő parse + logikai ellenőrzés
         try {
             if (startTimeStr == null || startTimeStr.isBlank() || endTimeStr == null || endTimeStr.isBlank()) {
                 model.addAttribute("timeError", "Kérlek add meg a kezdő és záró időpontot.");
@@ -339,7 +380,13 @@ public class EventsController {
         existing.setDescription(event.getDescription());
         existing.setCategory(event.getCategory());
 
-        // kép csere
+        if (event.getVisibility() == null) {
+            existing.setVisibility(EventVisibility.PUBLIC);
+        } else {
+            existing.setVisibility(event.getVisibility());
+        }
+        existing.setCapacity(event.getCapacity());
+
         if (image != null && !image.isEmpty()) {
             Path uploadRoot = Paths.get(UPLOAD_DIR, "events");
             Files.createDirectories(uploadRoot);
@@ -391,27 +438,14 @@ public class EventsController {
 
         favoriteService.toggle(user.getId(), id);
 
-        // vissza az /events-re úgy, hogy megtartsa a filtereket
         List<String> params = new ArrayList<>();
 
-        if (q != null && !q.isBlank()) {
-            params.add("q=" + URLEncoder.encode(q, StandardCharsets.UTF_8));
-        }
-        if (category != null && !category.isBlank()) {
-            params.add("category=" + category);
-        }
-        if (date != null && !date.isBlank()) {
-            params.add("date=" + date);
-        }
-        if ("true".equalsIgnoreCase(upcoming)) {
-            params.add("upcoming=true");
-        }
-        if (sort != null && !sort.isBlank()) {
-            params.add("sort=" + sort);
-        }
-        if ("true".equalsIgnoreCase(onlyFavorites)) {
-            params.add("onlyFavorites=true");
-        }
+        if (q != null && !q.isBlank()) params.add("q=" + URLEncoder.encode(q, StandardCharsets.UTF_8));
+        if (category != null && !category.isBlank()) params.add("category=" + category);
+        if (date != null && !date.isBlank()) params.add("date=" + date);
+        if ("true".equalsIgnoreCase(upcoming)) params.add("upcoming=true");
+        if (sort != null && !sort.isBlank()) params.add("sort=" + sort);
+        if ("true".equalsIgnoreCase(onlyFavorites)) params.add("onlyFavorites=true");
 
         if (params.isEmpty()) return "redirect:/events";
         return "redirect:/events?" + String.join("&", params);

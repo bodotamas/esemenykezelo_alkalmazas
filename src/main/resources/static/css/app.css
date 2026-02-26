@@ -337,3 +337,13 @@ body, .btn, .form-control, .form-select
 .avatar--sm{ width: 32px; height: 32px; }
 .avatar--md{ width: 92px; height: 92px; }
 .avatar--lg{ width: 104px; height: 104px; }
+
+body { margin: 0; }
+
+.app-nav-wrap{
+    width: min(1320px, 100%);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}

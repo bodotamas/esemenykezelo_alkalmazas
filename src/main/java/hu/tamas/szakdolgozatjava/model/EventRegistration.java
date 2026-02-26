@@ -1,7 +1,6 @@
 package hu.tamas.szakdolgozatjava.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,6 +25,11 @@ public class EventRegistration {
     @Column(nullable = false)
     private LocalDateTime registeredAt = LocalDateTime.now();
 
+    // ÚJ: státusz
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private RegistrationStatus status = RegistrationStatus.CONFIRMED;
+
     public Long getId() { return id; }
 
     public Event getEvent() { return event; }
@@ -36,4 +40,7 @@ public class EventRegistration {
 
     public LocalDateTime getRegisteredAt() { return registeredAt; }
     public void setRegisteredAt(LocalDateTime registeredAt) { this.registeredAt = registeredAt; }
+
+    public RegistrationStatus getStatus() { return status; }
+    public void setStatus(RegistrationStatus status) { this.status = status; }
 }

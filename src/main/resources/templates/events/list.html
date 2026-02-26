@@ -12,6 +12,8 @@
     <!-- App UI + Events UI -->
     <link rel="stylesheet" th:href="@{/css/app.css}">
     <link rel="stylesheet" th:href="@{/css/events.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css(v=${#dates.createNow().time})}">
+    <link rel="stylesheet" th:href="@{/css/events.css(v=${#dates.createNow().time})}">
 </head>
 <body>
 
@@ -153,20 +155,35 @@
                         </div>
 
                         <div class="event-meta mb-2">
-                            <div><span class="event-k">Hely</span> <span th:text="${e.location}">Hely</span></div>
-                            <div><span class="event-k">Kategória</span> <span th:text="${e.category}">EGYEB</span></div>
-                            <div><span class="event-k">Dátum</span> <span th:text="${e.date}">2026-01-01</span></div>
-
-                            <div th:if="${e.startTime != null and e.endTime != null}">
-                                <span class="event-k">Idő</span>
-                                <span th:text="${#temporals.format(e.startTime, 'HH:mm')}"></span>
-                                -
-                                <span th:text="${#temporals.format(e.endTime, 'HH:mm')}"></span>
+                            <div>
+                                <span class="event-k">Láthatóság</span>
+                                <span th:text="${e.visibility} == 'PRIVATE' ? 'Privát' : 'Nyilvános'">Nyilvános</span>
                             </div>
 
                             <div>
                                 <span class="event-k">Jelentkezők</span>
                                 <span th:text="${attendeeCounts[e.id]}">0</span> fő
+                                <span th:if="${e.capacity != null}">
+        / <span th:text="${e.capacity}">0</span>
+    </span>
+                            </div>
+
+                            <div th:if="${e.capacity != null}">
+                                <span class="event-k">Szabad hely</span>
+                                <span th:text="${freeSeats[e.id]}">0</span> fő
+                            </div>
+
+                            <div th:if="${waitlistCounts != null and waitlistCounts[e.id] != null and waitlistCounts[e.id] > 0}">
+                                <span class="event-k">Várólista</span>
+                                <span th:text="${waitlistCounts[e.id]}">0</span> fő
+                            </div>
+
+                            <div th:if="${e.capacity != null and attendeeCounts[e.id] >= e.capacity}">
+                                <span class="badge text-bg-warning">Betelt</span>
+                            </div>
+
+                            <div th:if="${e.visibility != null and e.visibility.name() == 'PRIVATE'}">
+                                <span class="badge text-bg-secondary">Privát</span>
                             </div>
                         </div>
 
@@ -198,7 +215,9 @@
                                       th:action="@{/events/{id}/join(id=${e.id})}"
                                       method="post">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                    <button class="btn btn-success w-100" type="submit">
+
+                                    <button class="btn btn-success w-100" type="submit"
+                                            th:text="${e.capacity != null and attendeeCounts[e.id] >= e.capacity} ? 'Várólistára jelentkezem' : 'Jelentkezem'">
                                         Jelentkezem
                                     </button>
                                 </form>

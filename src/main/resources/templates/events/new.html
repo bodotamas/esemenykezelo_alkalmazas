@@ -48,6 +48,24 @@
                 </div>
 
                 <div class="col-md-6">
+                    <label class="form-label">Láthatóság</label>
+                    <select class="form-select" th:field="*{visibility}">
+                        <option th:each="v : ${allVisibilities}"
+                                th:value="${v}"
+                                th:text="${v == T(hu.tamas.szakdolgozatjava.model.EventVisibility).PUBLIC ? 'Nyilvános' : 'Privát'}">
+                        </option>
+                    </select>
+                    <div class="form-text">Privát eseményt csak az ADMIN és a létrehozó látja.</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Max létszám (opcionális)</label>
+                    <input type="number" class="form-control" th:field="*{capacity}" min="1" placeholder="pl. 50">
+                    <div class="form-text">Ha üresen hagyod: korlátlan. Ha betelik: várólista.</div>
+                    <div class="text-danger mt-1" th:if="${#fields.hasErrors('capacity')}" th:errors="*{capacity}"></div>
+                </div>
+
+                <div class="col-md-6">
                     <label class="form-label">Esemény képe</label>
                     <input class="form-control" type="file" name="image" accept="image/*">
                     <div class="form-text">JPG/PNG ajánlott.</div>
