@@ -60,6 +60,10 @@
                     <div class="col-md-6">
                         <label class="form-label">Email</label>
                         <input class="form-control" type="email" th:field="*{email}">
+
+                        <div class="alert alert-danger mt-2 mb-0" th:if="${param.emailTaken}">
+                            Ez az email cím már foglalt.
+                        </div>
                     </div>
 
                     <div class="col-md-6">

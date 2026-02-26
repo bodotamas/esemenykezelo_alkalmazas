@@ -45,13 +45,24 @@ public class ProfileController {
     ) {
         var user = userRepository.findByUsername(principal.getName()).orElseThrow();
 
-        user.setEmail(formUser.getEmail());
+        // ✅ EMAIL UNIQUE KEZELÉS (ne Whitelabel legyen)
+        String newEmail = formUser.getEmail();
+        if (newEmail != null) newEmail = newEmail.trim();
+
+        if (newEmail != null && !newEmail.isBlank()) {
+            boolean taken = userRepository.existsByEmailAndIdNot(newEmail, user.getId());
+            if (taken) {
+                return "redirect:/profile/edit?emailTaken";
+            }
+        }
+
+        user.setEmail(newEmail);
         user.setFirstName(formUser.getFirstName());
         user.setLastName(formUser.getLastName());
         user.setBirthDate(formUser.getBirthDate());
         user.setHobby(formUser.getHobby());
 
-        // PROFILKÉP: ha töltött fel újat, töröljük a régit és mentjük az újat
+        // PROFILKÉP
         try {
             if (profileImage != null && !profileImage.isEmpty()) {
                 profileImageService.deleteIfExists(user.getProfileImagePath());
@@ -59,8 +70,6 @@ public class ProfileController {
                 user.setProfileImagePath(newPath);
             }
         } catch (IllegalArgumentException ex) {
-            // egyszerű megoldás: visszadobjuk ugyanarra az oldalra egy query parammal
-            // (Ha akarsz "szép" field error-t, akkor csinálunk BindingResult-os verziót is.)
             return "redirect:/profile/edit?imgError";
         } catch (Exception ex) {
             return "redirect:/profile/edit?imgError";
