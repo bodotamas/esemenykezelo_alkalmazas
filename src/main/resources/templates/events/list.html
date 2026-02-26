@@ -155,6 +155,18 @@
                         </div>
 
                         <div class="event-meta mb-2">
+
+                            <!-- ✅ ÚJ: Helyszín + Kategória -->
+                            <div th:if="${e.location != null and !#strings.isEmpty(e.location)}">
+                                <span class="event-k">Helyszín</span>
+                                <span th:text="${e.location}">Helyszín</span>
+                            </div>
+
+                            <div th:if="${e.category != null}">
+                                <span class="event-k">Kategória</span>
+                                <span th:text="${e.category}">EGYEB</span>
+                            </div>
+
                             <div>
                                 <span class="event-k">Láthatóság</span>
                                 <span th:text="${e.visibility} == 'PRIVATE' ? 'Privát' : 'Nyilvános'">Nyilvános</span>
@@ -164,8 +176,8 @@
                                 <span class="event-k">Jelentkezők</span>
                                 <span th:text="${attendeeCounts[e.id]}">0</span> fő
                                 <span th:if="${e.capacity != null}">
-        / <span th:text="${e.capacity}">0</span>
-    </span>
+                                    / <span th:text="${e.capacity}">0</span>
+                                </span>
                             </div>
 
                             <div th:if="${e.capacity != null}">
@@ -239,7 +251,7 @@
                                 Szerkesztés
                             </a>
 
-                            <!-- Statisztika (ADMIN vagy SZERVEZO, de SZERVEZO-nél csak saját) -->
+                            <!-- Statisztika -->
                             <a class="btn btn-outline-light w-100"
                                th:href="@{/events/{id}/stats(id=${e.id})}"
                                sec:authorize="hasRole('ADMIN') or (hasRole('SZERVEZO') and @eventSecurity.isOwner(#vars.e.id, authentication))">
@@ -271,7 +283,7 @@
     </div>
 </main>
 
-<!-- Modal: vendég jelentkezéshez (SZÉP, DARK / GLASS) -->
+<!-- Modal: vendég jelentkezéshez -->
 <div class="modal fade auth-modal" id="loginRequiredModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content auth-modal__content">
@@ -301,7 +313,7 @@
                         Bejelentkezés
                     </a>
                     <a th:href="@{/register}" class="btn auth-secondary btn-lg">
-                    Regisztráció
+                        Regisztráció
                     </a>
                 </div>
             </div>
