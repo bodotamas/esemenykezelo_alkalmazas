@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/events/*/edit", "/events/*/delete", "/events/*").authenticated()
 
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/forgot-password", "/reset-password").permitAll()
                         .anyRequest().authenticated()
                 )
 
