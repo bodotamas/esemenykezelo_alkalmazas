@@ -68,7 +68,6 @@ public class AdminUsersController {
     public String deleteUser(@PathVariable Long id, Principal principal) {
         User target = userRepository.findById(id).orElseThrow();
 
-        // ne tudd magad törölni
         if (principal != null && principal.getName().equals(target.getUsername())) {
             return "redirect:/admin/users?selfDeleteError";
         }

@@ -26,7 +26,6 @@ public class EventStatsController {
         this.favoriteRepository = favoriteRepository;
     }
 
-    // ✅ ADMIN mindent, SZERVEZO csak sajátot
     @PreAuthorize("hasRole('ADMIN') or @eventSecurity.isOwner(#id, authentication)")
     @GetMapping("/events/{id}/stats")
     public String eventStats(@PathVariable Long id, Model model) {

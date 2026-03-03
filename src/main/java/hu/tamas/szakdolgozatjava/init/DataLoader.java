@@ -23,7 +23,6 @@ public class DataLoader implements CommandLineRunner {
     public void run(String... args) {
         if (eventRepository.count() < 3)  {
 
-            // 1) Lakógyűlés
             Event e1 = new Event(
                     "Lakógyűlés",
                     "Közösségi terem",
@@ -35,7 +34,6 @@ public class DataLoader implements CommandLineRunner {
             e1.setEndTime(LocalDateTime.of(e1.getDate(), LocalTime.of(19, 30)));
             eventRepository.save(e1);
 
-            // 2) Tavaszi takarítás
             Event e2 = new Event(
                     "Tavaszi takarítás",
                     "Udvar",
@@ -47,7 +45,6 @@ public class DataLoader implements CommandLineRunner {
             e2.setEndTime(LocalDateTime.of(e2.getDate(), LocalTime.of(12, 0)));
             eventRepository.save(e2);
 
-            // 3) Közösségi grillezés
             Event e3 = new Event(
                     "Közösségi grillezés",
                     "Kert",

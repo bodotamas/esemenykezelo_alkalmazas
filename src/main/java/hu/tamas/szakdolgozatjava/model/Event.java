@@ -55,7 +55,6 @@ public class Event {
 
     private String imagePath;
 
-    // ===== ÚJ: láthatóság + kapacitás =====
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
@@ -68,8 +67,6 @@ public class Event {
     @Column
     private Integer capacity;
 
-    // ===== KONSTRUKTOROK =====
-
     public Event() {}
 
     public Event(String title, String location, LocalDate date, String description) {
@@ -79,7 +76,6 @@ public class Event {
         this.description = description;
     }
 
-    // ===== GETTEREK =====
 
     public Long getId() { return id; }
 
@@ -109,7 +105,6 @@ public class Event {
 
     public Integer getCapacity() { return capacity; }
 
-    // ===== SETTEREK =====
 
     public void setTitle(String title) { this.title = title; }
 
@@ -135,7 +130,6 @@ public class Event {
 
     public void setCapacity(Integer capacity) { this.capacity = capacity; }
 
-    // ===== AUTOMATIKUS MEZŐK =====
 
     @PrePersist
     public void prePersist() {
@@ -149,6 +143,5 @@ public class Event {
         if (this.endTime == null && this.date != null)
             this.endTime = LocalDateTime.of(this.date, LocalTime.of(10, 0));
 
-        // capacity: null = korlátlan, nem kényszerítjük
     }
 }

@@ -45,7 +45,6 @@ public class ProfileController {
     ) {
         var user = userRepository.findByUsername(principal.getName()).orElseThrow();
 
-        // ✅ EMAIL UNIQUE KEZELÉS (ne Whitelabel legyen)
         String newEmail = formUser.getEmail();
         if (newEmail != null) newEmail = newEmail.trim();
 
@@ -62,7 +61,6 @@ public class ProfileController {
         user.setBirthDate(formUser.getBirthDate());
         user.setHobby(formUser.getHobby());
 
-        // PROFILKÉP
         try {
             if (profileImage != null && !profileImage.isEmpty()) {
                 profileImageService.deleteIfExists(user.getProfileImagePath());

@@ -15,9 +15,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * Publikus azonosító (nem kitalálható, URL-barát)
-     */
     @Column(nullable = false, unique = true, length = 36)
     private String publicId;
 
@@ -49,7 +46,6 @@ public class User {
     @Column(name = "role", nullable = false)
     private Set<Role> roles = new HashSet<>();
 
-    // ===== GETTEREK / SETTEREK =====
 
     public Long getId() { return id; }
 
@@ -84,8 +80,6 @@ public class User {
 
     public void setId(Long id) { this.id = id; }
 
-
-    // ===== AUTOMATIKUS GENERÁLÁS =====
 
     @PrePersist
     public void prePersist() {

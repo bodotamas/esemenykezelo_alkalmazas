@@ -11,7 +11,6 @@ public class RegisterForm {
     private String firstName;
     private String lastName;
 
-    // yyyy-MM-dd formátum miatt később jól fog jönni, de egyszerűen stringként kezeljük a formban
     private String birthDate;
 
     private String hobby;

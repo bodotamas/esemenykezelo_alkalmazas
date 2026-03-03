@@ -87,7 +87,6 @@ public class EventsController {
 
         List<Event> events = eventRepository.search(q, categoryEnum, startOfDay, endOfDay, upcoming, now, sortObj);
 
-        // bejelentkezett user?
         Long userId = null;
         boolean isAdmin = false;
 
@@ -104,9 +103,6 @@ public class EventsController {
             favoriteEventIds = favoriteService.favoriteEventIdsForUser(userId);
         }
 
-        // PRIVÁT szűrés:
-        // - PUBLIC: mindenki látja
-        // - PRIVATE: csak ADMIN vagy tulajdonos látja a listában
         final Long userIdFinal = userId;
         final boolean isAdminFinal = isAdmin;
 
@@ -117,7 +113,6 @@ public class EventsController {
             return e.getCreatedBy() != null && Objects.equals(e.getCreatedBy().getId(), userIdFinal);
         }).toList();
 
-        // csak kedvencek
         if (onlyFavorites) {
             if (userId == null) {
                 events = List.of();
@@ -132,7 +127,6 @@ public class EventsController {
         model.addAttribute("events", events);
         model.addAttribute("favoriteEventIds", favoriteEventIds);
 
-        // létszámok (confirmed + waitlist)
         Map<Long, Long> attendeeCounts = new HashMap<>();
         Map<Long, Long> waitlistCounts = new HashMap<>();
         Map<Long, Long> freeSeats = new HashMap<>();
@@ -145,7 +139,7 @@ public class EventsController {
             waitlistCounts.put(e.getId(), waitlisted);
 
             if (e.getCapacity() == null) {
-                freeSeats.put(e.getId(), -1L); // -1 = korlátlan jelzés
+                freeSeats.put(e.getId(), -1L);
             } else {
                 long free = e.getCapacity() - confirmed;
                 freeSeats.put(e.getId(), Math.max(0, free));
@@ -156,7 +150,6 @@ public class EventsController {
         model.addAttribute("waitlistCounts", waitlistCounts);
         model.addAttribute("freeSeats", freeSeats);
 
-        // user regisztrált event id-k (a gombokhoz)
         Set<Long> registeredEventIds = Collections.emptySet();
         if (principal != null) {
             var user = userRepository.findByUsername(principal.getName()).orElseThrow();
@@ -181,7 +174,7 @@ public class EventsController {
         e.setDate(java.time.LocalDate.now());
         e.setCategory(Category.EGYEB);
         e.setVisibility(EventVisibility.PUBLIC);
-        e.setCapacity(null); // korlátlan default
+        e.setCapacity(null);
 
         model.addAttribute("event", e);
         model.addAttribute("allCategories", Category.values());
@@ -189,7 +182,6 @@ public class EventsController {
         model.addAttribute("startTimeStr", "09:00");
         model.addAttribute("endTimeStr", "10:00");
 
-        // a template-hez kelleni fog majd:
         model.addAttribute("allVisibilities", EventVisibility.values());
 
         return "events/new";
@@ -241,7 +233,6 @@ public class EventsController {
         var user = userRepository.findByUsername(principal.getName()).orElseThrow();
         event.setCreatedBy(user);
 
-        // null safety
         if (event.getVisibility() == null) event.setVisibility(EventVisibility.PUBLIC);
 
         eventRepository.save(event);
@@ -268,7 +259,6 @@ public class EventsController {
         return "redirect:/events";
     }
 
-    // ===== JELENTKEZÉS / LEMONDÁS =====
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/events/{id}/join")
@@ -288,7 +278,6 @@ public class EventsController {
         }
 
         RegistrationStatus status = registrationService.register(id, user.getId());
-        // Ha akarsz: később feliratozzuk a UI-n, hogy CONFIRMED vagy WAITLISTED lett.
         return "redirect:/events";
     }
 
@@ -304,8 +293,6 @@ public class EventsController {
         registrationService.unregister(id, user.getId());
         return "redirect:/events";
     }
-
-    // ===== EDIT / UPDATE / DELETE =====
 
     @PreAuthorize("hasRole('ADMIN') or @eventSecurity.isOwner(#id, authentication)")
     @GetMapping("/events/{id}/edit")

@@ -45,7 +45,6 @@ public class RegistrationService {
     @Transactional
     public RegistrationStatus register(Long eventId, Long userId) {
         if (repo.existsByEvent_IdAndUser_Id(eventId, userId)) {
-            // már van (confirmed vagy waitlist)
             return repo.findByEvent_IdAndUser_Id(eventId, userId).map(EventRegistration::getStatus)
                     .orElse(RegistrationStatus.CONFIRMED);
         }
@@ -64,7 +63,6 @@ public class RegistrationService {
 
         EventRegistration er = new EventRegistration();
 
-        // csak id-val “rámutatunk”
         var eRef = new Event();
         eRef.setIdForRegistration(eventId);
 
@@ -79,10 +77,6 @@ public class RegistrationService {
         return status;
     }
 
-    /**
-     * Lemondás:
-     * - ha CONFIRMED törlődik és volt várólista => a legrégebbi WAITLISTED -> CONFIRMED
-     */
     @Transactional
     public void unregister(Long eventId, Long userId) {
         var existingOpt = repo.findByEvent_IdAndUser_Id(eventId, userId);
@@ -94,7 +88,6 @@ public class RegistrationService {
         repo.delete(existing);
 
         if (removedStatus == RegistrationStatus.CONFIRMED) {
-            // próbálunk felmozgatni
             var nextOpt = repo.findFirstByEvent_IdAndStatusOrderByRegisteredAtAsc(eventId, RegistrationStatus.WAITLISTED);
             if (nextOpt.isPresent()) {
                 var next = nextOpt.get();

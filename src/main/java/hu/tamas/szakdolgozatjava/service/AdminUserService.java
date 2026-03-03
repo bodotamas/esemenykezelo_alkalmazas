@@ -34,7 +34,6 @@ public class AdminUserService {
     public void deleteUserHard(Long userId) {
         if (!userRepository.existsById(userId)) return;
 
-        // 1) Ha a user hozott létre eventeket: előbb az eventekhez tartozó függőségek törlése, majd az eventek.
         List<Event> createdEvents = eventRepository.findByCreatedBy_Id(userId);
         for (Event e : createdEvents) {
             Long eventId = e.getId();
@@ -43,11 +42,9 @@ public class AdminUserService {
             eventRepository.deleteById(eventId);
         }
 
-        // 2) User saját kapcsolatai (kedvencek, jelentkezések)
         eventRegistrationRepository.deleteByUser_Id(userId);
         eventFavoriteRepository.deleteByUser_Id(userId);
 
-        // 3) Végül a user (a user_roles ElementCollection is takarodik)
         userRepository.deleteById(userId);
     }
 }

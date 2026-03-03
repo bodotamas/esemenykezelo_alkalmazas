@@ -26,8 +26,6 @@ public class ProfileImageService {
             ext = original.substring(dot).toLowerCase();
         }
 
-        // Minimális "kép" ellenőrzés (ne legyen kötelező, de hasznos)
-        // Ha már van nálad validáció events képeknél, ezt akár ki is veheted.
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
             throw new IllegalArgumentException("Csak képfájl tölthető fel!");
@@ -38,17 +36,14 @@ public class ProfileImageService {
         String filename = UUID.randomUUID() + ext;
         Path target = uploadDir.resolve(filename);
 
-        // felülírás védelem
         Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
 
-        // WebConfig-od miatt /uploads/** elérhető, így ez működni fog:
         return "/uploads/profiles/" + filename;
     }
 
     public void deleteIfExists(String profileImagePath) {
         if (profileImagePath == null || profileImagePath.isBlank()) return;
 
-        // profileImagePath: "/uploads/profiles/xyz.png"
         String prefix = "/uploads/profiles/";
         if (!profileImagePath.startsWith(prefix)) return;
 
@@ -58,7 +53,6 @@ public class ProfileImageService {
         try {
             Files.deleteIfExists(target);
         } catch (IOException ignored) {
-            // nem kritikus
         }
     }
 }

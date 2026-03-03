@@ -25,7 +25,6 @@ public class FavoriteService {
         this.eventRepository = eventRepository;
     }
 
-    // 🔹 EZT TEDD BE
     public Set<Long> favoriteEventIdsForUser(Long userId) {
         return favoriteRepository.findFavoriteEventIdsByUserId(userId);
     }

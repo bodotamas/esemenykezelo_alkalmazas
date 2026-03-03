@@ -25,7 +25,6 @@ public class EventRegistration {
     @Column(nullable = false)
     private LocalDateTime registeredAt = LocalDateTime.now();
 
-    // ÚJ: státusz
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private RegistrationStatus status = RegistrationStatus.CONFIRMED;
